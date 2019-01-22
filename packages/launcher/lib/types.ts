@@ -10,7 +10,13 @@ export type Browser = {
   /** RegExp to use to extract version from something like "Google Chrome 58.0.3029.110" */
   versionRegex: RegExp
   profile: boolean
-  binary: string
+  /** 
+   * Currently only used for Linux - list of possible $PATH-accessible binaries for this browser 
+   * The first one that matches will be used
+   **/
+  binaries: string[]
+  /** The actual browser binary this browser was resolved to */
+  binary?: string
   version?: string
   majorVersion?: string
   page?: string

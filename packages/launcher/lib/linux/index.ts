@@ -1,11 +1,12 @@
 import { log } from '../log'
 import { trim, tap } from 'ramda'
 import { FoundBrowser, Browser, NotInstalledError } from '../types'
+import { Promise } from 'bluebird';
 import * as execa from 'execa'
 
-const notInstalledErr = (name: string) => {
+const notInstalledErr = (names: string[]) => {
   const err: NotInstalledError = new Error(
-    `Browser not installed: ${name}`
+    `Browser not installed: ${names.join(', ')}`
   ) as NotInstalledError
   err.notInstalled = true
   throw err
@@ -13,7 +14,7 @@ const notInstalledErr = (name: string) => {
 
 function getLinuxBrowser(
   name: string,
-  binary: string,
+  binaries: string[],
   versionRegex: RegExp
 ): Promise<FoundBrowser> {
   const getVersion = (stdout: string) => {
@@ -26,32 +27,37 @@ function getLinuxBrowser(
       stdout,
       versionRegex
     )
-    return notInstalledErr(binary)
+    return undefined
   }
 
   const returnError = (err: Error) => {
     log('Could not detect browser %s', err.message)
-    return notInstalledErr(binary)
+    return notInstalledErr(binaries)
   }
 
-  const cmd = `${binary} --version`
-  log('looking using command "%s"', cmd)
-  return execa
-    .shell(cmd)
-    .then(result => result.stdout)
-    .then(trim)
-    .then(tap(log))
-    .then(getVersion)
-    .then((version: string) => {
-      return {
-        name,
-        version,
-        path: binary
-      }
+  return Promise.any(
+    binaries.map(binary => {
+      const cmd = `${binary} --version`
+      log('looking using command "%s"', cmd)
+
+      return execa
+      .shell(cmd)
+      .then(result => result.stdout)
+      .then(trim)
+      .then(tap(log))
+      .then(getVersion)
+      .then((version: string | undefined) => {
+        if (!version) throw Promise.reject(notInstalledErr([binary]))
+        return {
+          name,
+          version,
+          path: binary
+        }
+      })
     })
-    .catch(returnError)
+  ).catch(returnError)
 }
 
 export function detectBrowserLinux(browser: Browser) {
-  return getLinuxBrowser(browser.name, browser.binary, browser.versionRegex)
+  return getLinuxBrowser(browser.name, browser.binaries, browser.versionRegex)
 }
