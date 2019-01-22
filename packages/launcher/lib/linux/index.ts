@@ -1,7 +1,7 @@
 import { log } from '../log'
 import { trim, tap } from 'ramda'
 import { FoundBrowser, Browser, NotInstalledError } from '../types'
-import { Promise } from 'bluebird';
+import { Promise } from 'bluebird'
 import * as execa from 'execa'
 
 const notInstalledErr = (names: string[]) => {
@@ -41,19 +41,19 @@ function getLinuxBrowser(
       log('looking using command "%s"', cmd)
 
       return execa
-      .shell(cmd)
-      .then(result => result.stdout)
-      .then(trim)
-      .then(tap(log))
-      .then(getVersion)
-      .then((version: string | undefined) => {
-        if (!version) throw Promise.reject(notInstalledErr([binary]))
-        return {
-          name,
-          version,
-          path: binary
-        }
-      })
+        .shell(cmd)
+        .then(result => result.stdout)
+        .then(trim)
+        .then(tap(log))
+        .then(getVersion)
+        .then((version: string | undefined) => {
+          if (!version) throw Promise.reject(notInstalledErr([binary]))
+          return {
+            name,
+            version,
+            path: binary
+          }
+        })
     })
   ).catch(returnError)
 }
