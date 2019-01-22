@@ -1,11 +1,10 @@
-/** TODO this are typical browser names, not just Mac */
-export type MacBrowserName = 'chrome' | 'chromium' | 'canary' | string
+export type BrowserName = 'chrome' | 'chromium' | 'canary' | string
 
 export type PlatformName = 'darwin' | 'linux' | 'win32'
 
 export type Browser = {
   /** short browser name */
-  name: MacBrowserName
+  name: BrowserName
   /** Optional display name */
   displayName: string
   /** RegExp to use to extract version from something like "Google Chrome 58.0.3029.110" */
